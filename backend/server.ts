@@ -46,8 +46,22 @@ app.post("/api/files", upload.single("file"), async (req, res) => {
 app.get("/api/users", async (req, res) => {
   // --- TODOS ---
   // 1. extract the query param "q" from the request
+  const { q } = req.query
   // 2. validate that we have the query param
+  if (q) {
+    return res.status(500).json({
+      message: "Query param 'q' is required"
+    })
+  }
+
+  if (Array.isArray(q)) {
+    return res.status(500).json({
+      message: "Query param 'q' must be a string"
+    })
+  }
   // 3. filter the data from the DB (or memory) with the query param
+  const search = q?.toString().toLowerCase()
+  const filteredData = userData.filter((row) => {})
   // 4. return 200 with the message and the JSON
   return res.status(200).json({ data: [] })
 })
