@@ -1,5 +1,8 @@
 import React, { useState } from "react"
+import { Toaster, toast } from "sonner"
 import "./App.css"
+import { uploadFile } from "./services/upload"
+import { type Data } from "./types"
 
 const APP_STATUS = {
   IDLE: "idle",
@@ -18,6 +21,7 @@ type AppStatusType = (typeof APP_STATUS)[keyof typeof APP_STATUS]
 
 function App() {
   const [appStatus, setAppStatus] = useState<AppStatusType>(APP_STATUS.IDLE)
+  const [data, setData] = useState<Data>([])
   const [file, setFile] = useState<File | null>(null)
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,12 +33,24 @@ function App() {
     }
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (appStatus !== APP_STATUS.READY_UPLOAD || !file) {
       return
     }
     setAppStatus(APP_STATUS.UPLOADING)
+
+    const [err, newData] = await uploadFile(file)
+    console.log(newData)
+
+    if (err) {
+      setAppStatus(APP_STATUS.ERROR)
+      toast.error(err.message)
+      return
+    }
+    setAppStatus(APP_STATUS.READY_USAGE)
+    if (newData) setData(newData)
+    toast.success("Archivo subido correctamente")
   }
 
   const showButton =
@@ -42,26 +58,25 @@ function App() {
 
   return (
     <>
-      <main>
-        <h4>Challenge: Upload CSV + Search</h4>
-        <form onSubmit={handleSubmit}>
-          <label>
-            <input
-              disabled={appStatus === APP_STATUS.UPLOADING}
-              onChange={handleInputChange}
-              name="file"
-              type="file"
-              accept=".csv"
-            />
-          </label>
+      <Toaster />
+      <h4>Challenge: Upload CSV + Search</h4>
+      <form onSubmit={handleSubmit}>
+        <label>
+          <input
+            disabled={appStatus === APP_STATUS.UPLOADING}
+            onChange={handleInputChange}
+            name="file"
+            type="file"
+            accept=".csv"
+          />
+        </label>
 
-          {showButton && (
-            <button disabled={appStatus == APP_STATUS.UPLOADING}>
-              {BUTTON_TEXT[appStatus]}
-            </button>
-          )}
-        </form>
-      </main>
+        {showButton && (
+          <button disabled={appStatus == APP_STATUS.UPLOADING}>
+            {BUTTON_TEXT[appStatus]}
+          </button>
+        )}
+      </form>
     </>
   )
 }
