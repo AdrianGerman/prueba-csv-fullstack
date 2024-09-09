@@ -56,27 +56,30 @@ function App() {
   const showButton =
     appStatus === APP_STATUS.READY_UPLOAD || appStatus === APP_STATUS.UPLOADING
 
+  const showInput = appStatus !== APP_STATUS.READY_USAGE
   return (
     <>
       <Toaster />
       <h4>Challenge: Upload CSV + Search</h4>
-      <form onSubmit={handleSubmit}>
-        <label>
-          <input
-            disabled={appStatus === APP_STATUS.UPLOADING}
-            onChange={handleInputChange}
-            name="file"
-            type="file"
-            accept=".csv"
-          />
-        </label>
+      {showInput && (
+        <form onSubmit={handleSubmit}>
+          <label>
+            <input
+              disabled={appStatus === APP_STATUS.UPLOADING}
+              onChange={handleInputChange}
+              name="file"
+              type="file"
+              accept=".csv"
+            />
+          </label>
 
-        {showButton && (
-          <button disabled={appStatus == APP_STATUS.UPLOADING}>
-            {BUTTON_TEXT[appStatus]}
-          </button>
-        )}
-      </form>
+          {showButton && (
+            <button disabled={appStatus == APP_STATUS.UPLOADING}>
+              {BUTTON_TEXT[appStatus]}
+            </button>
+          )}
+        </form>
+      )}
     </>
   )
 }
