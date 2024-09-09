@@ -5,7 +5,10 @@ import { toast } from "sonner"
 
 export const Search = ({ initialData }: { initialData: Data }) => {
   const [data, setData] = useState<Data>(initialData)
-  const [search, setSeatch] = useState<string>("")
+  const [search, setSeatch] = useState<string>(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    return searchParams.get("q") ?? ""
+  })
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSeatch(event.target.value)
@@ -42,6 +45,7 @@ export const Search = ({ initialData }: { initialData: Data }) => {
           onChange={handleSearch}
           type="search"
           placeholder="Buscar información..."
+          defaultValue={search}
         />
       </form>
       <ul>
