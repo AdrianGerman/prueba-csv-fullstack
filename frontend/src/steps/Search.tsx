@@ -2,6 +2,9 @@ import { useEffect, useState } from "react"
 import { Data } from "../types"
 import { searchData } from "../services/search"
 import { toast } from "sonner"
+import { useDebounce } from "@uidotdev/usehooks"
+
+const DEBOUNCE_TIME = 300
 
 export const Search = ({ initialData }: { initialData: Data }) => {
   const [data, setData] = useState<Data>(initialData)
@@ -10,24 +13,26 @@ export const Search = ({ initialData }: { initialData: Data }) => {
     return searchParams.get("q") ?? ""
   })
 
+  const debounceSearch = useDebounce(search, DEBOUNCE_TIME)
+
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSeatch(event.target.value)
   }
 
   useEffect(() => {
     const newPathname =
-      search === "" ? window.location.pathname : `?q=${search}`
+      debounceSearch === "" ? window.location.pathname : `?q=${debounceSearch}`
 
     window.history.pushState({}, "", newPathname)
-  }, [search])
+  }, [debounceSearch])
 
   useEffect(() => {
-    if (!search) {
+    if (!debounceSearch) {
       setData(initialData)
       return
     }
     // llamar a la api para filtrar los resultados
-    searchData(search).then((response) => {
+    searchData(debounceSearch).then((response) => {
       const [err, newData] = response
       if (err) {
         toast.error(err.message)
@@ -35,7 +40,7 @@ export const Search = ({ initialData }: { initialData: Data }) => {
       }
       if (newData) setData(newData)
     })
-  }, [search, initialData])
+  }, [debounceSearch, initialData])
 
   return (
     <div>
